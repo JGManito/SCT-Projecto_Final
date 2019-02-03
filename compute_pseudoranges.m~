@@ -10,7 +10,7 @@ for i=1:size(true_range,1)
     noise(i) = rand()*noise_sigma;
 end
 
-pseudorange = true_range + ionospheric_disturbance + noise;
+pseudorange = true_range + ionospheric_disturbance;
 
 end
 

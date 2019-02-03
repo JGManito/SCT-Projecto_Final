@@ -6,7 +6,7 @@
 %Pedro Afonso                                            %
 %Joao Manito                                             %
 %--------------------------------------------------------%
-%Funcao main para a computação das posições usando Least %
+%Funcao main para a computaï¿½ï¿½o das posiï¿½ï¿½es usando Least %
 %Squares                                                 %
 %--------------------------------------------------------%
 
@@ -36,7 +36,7 @@ h_mdois=2*(10^-20);
 h_zero=2*(10^-19);
 sigma_R=7.11;
 
-%Condições iniciais da filtragem de Kalman
+%Condiï¿½ï¿½es iniciais da filtragem de Kalman
 x_predz=0;
 vxi=0;
 y_predz=0;
@@ -119,25 +119,25 @@ disp(satellite_positions);
 %Compute the true range to the receiver
 true_range = compute_true_range(satellite_positions,pos_real_current_ECEF(t_sim,:));
 
+%Determine satellites in view using the initial estimate for position
+mask_angle = 10;
+[satellite_positions_visible,satellite_visible,true_range_visible] = filter_satellites_visible(satellite_positions,satellite,true_range,mask_angle,position_estimate);
+
 %Compute the pseudorange to the receiver
 pseudorange = compute_pseudoranges(true_range);
 
 
 
 %------Receiver Motion Simulation------%
-%Determine satellites in view using the initial estimate for position
-mask_angle = 10;
-%[satellite_positions_visible,satellite_visible,pseudorange_visible,true_range_visible] = filter_satellites_visible(satellite_positions,satellite,pseudorange,true_range,mask_angle,position_estimate);
+z(:,1) = pseudorange_visible;
+n = size(pseudorange_visible,1);
 
-z(:,1) = pseudorange;
-n = size(pseudorange,1);
-
-x_sat(:,1) = satellite_positions(:,1);
-y_sat(:,1) = satellite_positions(:,2);
-z_sat(:,1) = satellite_positions(:,3);
+x_sat(:,1) = satellite_positions_visible(:,1);
+y_sat(:,1) = satellite_positions_visible(:,2);
+z_sat(:,1) = satellite_positions_visible(:,3);
 
 %%Extended Kalman Apllied
-%Ganho K da primeira iteração
+%Ganho K da primeira iteraï¿½ï¿½o
 
 H(:,:,1)=dobs(n,x_sat,y_sat,z_sat,x_predz,y_predz,z_predz);
 R(:,:,1)=varpseudo(sigma_R,n);
@@ -148,7 +148,7 @@ K(:,:,1)= gain(P_kz,H(:,:,1),R(:,:,1));
 h(:,1)= obs(n,x_sat,y_sat,z_sat,x_predz,y_predz,z_predz,DeltaTz,c);
 
 
-%Estimate update da primeira iteração
+%Estimate update da primeira iteraï¿½ï¿½o
 states_estim(:,:,1) = update(states_predz,K(:,:,1),h(:,:,1),z(:,1));
 
 %Error Covariance update
@@ -208,15 +208,15 @@ for t_sim=2:1:251 %Total trajectory time is 250s, with 1Hz sample rate
     %------Receiver Motion Simulation------%
     %Determine satellites in view using the initial estimate for position
     mask_angle = 10;
-    %[satellite_positions_visible,satellite_visible,pseudorange_visible,true_range_visible] = filter_satellites_visible(satellite_positions,satellite,pseudorange,true_range,mask_angle,position_estimate);
+    [satellite_positions_visible,satellite_visible,pseudorange_visible,true_range_visible] = filter_satellites_visible(satellite_positions,satellite,pseudorange,true_range,mask_angle,position_estimate);
     
-    z(:,t_sim) = pseudorange;
-    n = size(pseudorange,1);
-    x_sat(:,t_sim) = satellite_positions(:,1);
-    y_sat(:,t_sim) = satellite_positions(:,2);
-    z_sat(:,t_sim) = satellite_positions(:,3);
+    z(:,t_sim) = pseudorange_visible;
+    n = size(pseudorange_visible,1);
+    x_sat(:,t_sim) = satellite_positions_visible(:,1);
+    y_sat(:,t_sim) = satellite_positions_visible(:,2);
+    z_sat(:,t_sim) = satellite_positions_visible(:,3);
     
-    %Ganho K da primeira iteração
+    %Ganho K da primeira iteraï¿½ï¿½o
     
     H(:,:,t_sim)=dobs(n,x_sat,y_sat,z_sat,states_predict(1,t_sim-1),states_predict(3,t_sim-1),states_predict(5,t_sim-1));
     R(:,:,t_sim)=varpseudo(sigma_R,n);
@@ -305,7 +305,7 @@ R=diag(Rvar);
 end
 
 
-%Matriz K - Função ganho
+%Matriz K - Funï¿½ï¿½o ganho
 function [K_k] = gain(P_k,H_k,R_k)
 
 H_kT=transpose(H_k);
@@ -321,7 +321,7 @@ x_estimn = states_pred + K_k*(z_k-h_k);
 
 end
 
-%matriz h das observaçoes usada no estimate update
+%matriz h das observaï¿½oes usada no estimate update
 
 function [h] = obs(n,x_sat,y_sat,z_sat,x_pred,y_pred,z_pred,DeltaT,c)
 
